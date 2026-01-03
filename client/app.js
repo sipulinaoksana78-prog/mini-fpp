@@ -24,9 +24,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     loadingScreen.style.display = 'none';
                     appContainer.style.display = 'flex';
                 }, 500);
-            }, 500);
+            }, 300);
         }
-    }, 30);
+    }, 20);
 
     // Initialize Game
     initGame();

@@ -17,9 +17,8 @@
 
     <!-- Loading Screen -->
     <div id="loading-screen" class="loading-screen">
-        <h1 class="loading-title">LOADING</h1>
         <div class="loading-counter">0%</div>
-        <div class="loading-bar-container">
+        <div class="loading-bar-container" style="display: none;">
             <div id="loading-bar" class="loading-bar"></div>
         </div>
     </div>
@@ -88,10 +87,13 @@
                     <div class="boost-card">
                         <div class="boost-icon">🤖</div>
                         <div class="boost-info">
-                            <h3 data-i18n="auto_pick">Auto Pick 95%</h3>
+                            <h3 data-i18n="auto_pick">Auto Pick 100%</h3>
                             <p class="boost-price">7000 GOLD</p>
                         </div>
-                        <button class="buy-btn" onclick="buyBoost(7000)">Buy</button>
+                        <div class="boost-actions">
+                            <button class="buy-btn" onclick="buyBoost(7000)">Buy</button>
+                            <button id="btn-auto-pick" class="action-btn primary-btn hidden" style="width: auto; padding: 10px 20px; font-size: 0.9rem; margin-top: 5px;" data-i18n="auto_pick_btn">AUTO PICK</button>
+                        </div>
                     </div>
                     <div class="boost-card tg-subscription">
                         <div class="boost-icon">📱</div>

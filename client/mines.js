@@ -6,7 +6,8 @@ let gameState = {
     attempts: 10,
     roundGold: 0,
     totalGold: 10000, // Starting bonus
-    displayedGold: 10000 // For animation
+    displayedGold: 10000, // For animation
+    hasAutoPick: false
 };
 
 const GRID_SIZE = 25;
@@ -20,13 +21,37 @@ const btnCashout = document.getElementById('btn-cashout');
 const flashOverlay = document.getElementById('flash-overlay');
 const appContainer = document.getElementById('app');
 const timerDisplay = document.getElementById('timer-display');
+const btnAutoPick = document.getElementById('btn-auto-pick');
+
+function loadState() {
+    const saved = localStorage.getItem('mines_game_state');
+    if (saved) {
+        const parsed = JSON.parse(saved);
+        gameState.totalGold = parsed.totalGold || 10000;
+        gameState.displayedGold = gameState.totalGold;
+        gameState.attempts = parsed.attempts !== undefined ? parsed.attempts : 10;
+        gameState.hasAutoPick = !!parsed.hasAutoPick;
+    }
+}
+
+function saveState() {
+    localStorage.setItem('mines_game_state', JSON.stringify({
+        totalGold: gameState.totalGold,
+        attempts: gameState.attempts,
+        hasAutoPick: gameState.hasAutoPick
+    }));
+}
 
 function initGame() {
+    loadState();
     renderGrid();
     updateUI();
     
     btnPlay.addEventListener('click', startGame);
     btnCashout.addEventListener('click', cashout);
+    if (btnAutoPick) {
+        btnAutoPick.addEventListener('click', handleAutoPick);
+    }
 
     // Start timer interval
     setInterval(updateTimer, 1000);
@@ -80,6 +105,7 @@ function updateBalance(newTotal) {
     if (newTotal === gameState.displayedGold) return;
     animateValue(balanceDisplay, gameState.displayedGold, newTotal, 800);
     gameState.totalGold = newTotal;
+    saveState();
 }
 
 function renderGrid() {
@@ -104,11 +130,13 @@ function startGame() {
     gameState.revealed = new Array(GRID_SIZE).fill(false);
     
     gameState.attempts--;
+    saveState();
     
     // Reset Grid Visuals
     document.querySelectorAll('.grid-cell').forEach(cell => {
         cell.className = 'grid-cell';
         cell.innerHTML = '';
+        cell.style.opacity = '1';
     });
 
     updateUI();
@@ -170,6 +198,16 @@ function triggerMineEffect() {
         appContainer.classList.remove('shake-screen');
     }, 500);
 
+    // Bomb Animation: Clear field
+    const cells = document.querySelectorAll('.grid-cell');
+    cells.forEach((cell, i) => {
+        setTimeout(() => {
+            cell.style.transition = 'all 0.5s ease-out';
+            cell.style.opacity = '0';
+            cell.style.transform = 'scale(0.5) rotate(20deg)';
+        }, i * 20);
+    });
+
     // Vibrate
     if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
 }
@@ -209,9 +247,14 @@ function updateUI() {
         
         minesGrid.classList.remove('hidden', 'grid-hidden');
         timerDisplay.classList.remove('visible');
+        
+        if (gameState.hasAutoPick && btnAutoPick) {
+            btnAutoPick.classList.remove('hidden');
+        }
     } else {
         btnPlay.classList.remove('hidden');
         btnCashout.classList.add('hidden');
+        if (btnAutoPick) btnAutoPick.classList.add('hidden');
         
         if (gameState.attempts <= 0) {
             btnPlay.classList.add('disabled');
@@ -250,12 +293,42 @@ function updateUI() {
 function buyBoost(cost) {
     if (gameState.totalGold >= cost) {
         const newTotal = gameState.totalGold - cost;
+        
+        // Handle specific boosts
+        if (cost === 7000) {
+            gameState.hasAutoPick = true;
+        } else if (cost === 3000) {
+            gameState.attempts += 5;
+        }
+        
         updateBalance(newTotal);
+        saveState();
         updateUI();
         // Visual feedback
         alert("Boost Purchased!"); // Replace with custom toast later
     } else {
         alert(t('low_balance'));
+    }
+}
+
+async function handleAutoPick() {
+    if (!gameState.active || !gameState.hasAutoPick) return;
+    
+    // Pick 15 safe cells with 100% win rate logic
+    // We already have the grid generated, so we just pick safe ones
+    const safeIndices = [];
+    gameState.grid.forEach((isMine, idx) => {
+        if (!isMine) safeIndices.push(idx);
+    });
+
+    // Shuffle and pick 15
+    const toPick = safeIndices.sort(() => 0.5 - Math.random()).slice(0, 15);
+    
+    for (const index of toPick) {
+        if (gameState.active) {
+            handleCellClick(index);
+            await new Promise(r => setTimeout(r, 200)); // Delay for visual effect
+        }
     }
 }
 
