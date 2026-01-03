@@ -1,0 +1,500 @@
+:root {
+    --color-bg: #1a0505;
+    --color-primary: #8a0a0a;
+    --color-primary-dark: #5c0000;
+    --color-gold: #ffd700;
+    --color-gold-glow: rgba(255, 215, 0, 0.5);
+    --color-text: #ffffff;
+    --color-text-dim: #cccccc;
+    --color-glass: rgba(255, 255, 255, 0.1);
+    --color-glass-border: rgba(255, 255, 255, 0.2);
+    --font-main: 'Montserrat', sans-serif;
+    --safe-color: #2eff2e;
+    --danger-color: #ff2e2e;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+}
+
+body {
+    font-family: var(--font-main);
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.app-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('bg.jpg') no-repeat center center;
+    background-size: cover;
+    z-index: -2;
+}
+
+.app-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(20,0,0,0.9));
+    z-index: -1;
+    backdrop-filter: blur(2px);
+}
+
+/* Loading Screen */
+.loading-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.5s ease;
+}
+
+.loading-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--color-gold);
+    margin-bottom: 20px;
+    letter-spacing: 2px;
+    text-shadow: 0 0 20px var(--color-gold-glow);
+}
+
+.loading-counter {
+    font-size: 1.5rem;
+    color: var(--color-text-dim);
+    font-family: monospace;
+    margin-bottom: 20px;
+}
+
+.loading-bar-container {
+    width: 200px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.loading-bar {
+    width: 0%;
+    height: 100%;
+    background: var(--color-gold);
+    box-shadow: 0 0 10px var(--color-gold-glow);
+    transition: width 0.1s ease-out;
+}
+
+/* App Container */
+.app-container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+/* HUD Header */
+.hud-header {
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(5px);
+    border-bottom: 1px solid var(--color-glass-border);
+}
+
+.logo {
+    font-weight: 800;
+    font-size: 1.2rem;
+    color: var(--color-gold);
+    letter-spacing: 1px;
+}
+
+.lang-switch {
+    font-size: 0.9rem;
+    color: var(--color-text-dim);
+    cursor: pointer;
+}
+
+.lang-switch span.active {
+    color: var(--color-gold);
+    text-shadow: 0 0 10px var(--color-gold-glow);
+    font-weight: bold;
+}
+
+/* Balance */
+.balance-display {
+    text-align: center;
+    padding: 20px 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
+.balance-display .icon {
+    margin-right: 5px;
+}
+
+/* Content Area */
+.content-area {
+    flex: 1;
+    overflow-y: auto;
+    position: relative;
+    padding-bottom: 80px; /* Space for nav */
+}
+
+section {
+    display: none;
+    padding: 20px;
+    animation: fadeIn 0.3s ease;
+}
+
+section.active-section {
+    display: block;
+}
+
+/* Mines Game */
+.attempts-counter {
+    text-align: center;
+    margin-bottom: 15px;
+    color: var(--color-text-dim);
+    font-size: 0.9rem;
+}
+
+.mines-grid-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.mines-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    width: 100%;
+    max-width: 320px;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 10px;
+    border-radius: 12px;
+    border: 1px solid var(--color-glass-border);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.grid-hidden {
+    opacity: 0;
+    transform: scale(0.9) translateY(20px);
+    pointer-events: none;
+}
+
+.timer-display {
+    text-align: center;
+    color: var(--color-gold);
+    font-size: 2.5rem;
+    margin: 20px 0;
+    font-family: monospace;
+    font-weight: bold;
+    text-shadow: 0 0 15px var(--color-gold-glow);
+    display: none;
+    opacity: 0;
+    transform: translateY(-20px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.timer-display.visible {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.grid-cell {
+    aspect-ratio: 1;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.5rem;
+    transition: all 0.2s ease;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.grid-cell:active {
+    transform: scale(0.95);
+}
+
+.grid-cell.revealed {
+    background: rgba(0, 0, 0, 0.6);
+}
+
+.grid-cell.safe {
+    background: rgba(46, 255, 46, 0.15);
+    border-color: var(--safe-color);
+    box-shadow: 0 0 10px rgba(46, 255, 46, 0.3);
+}
+
+.grid-cell.mine {
+    background: rgba(255, 46, 46, 0.2);
+    border-color: var(--danger-color);
+    box-shadow: 0 0 15px var(--danger-color);
+}
+
+.game-controls {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.action-btn {
+    padding: 15px 40px;
+    border: none;
+    border-radius: 30px;
+    font-weight: 800;
+    font-size: 1.1rem;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: transform 0.2s, box-shadow 0.2s;
+    width: 80%;
+    max-width: 300px;
+}
+
+.action-btn:active {
+    transform: scale(0.95);
+}
+
+.primary-btn {
+    background: linear-gradient(135deg, var(--color-gold), #b8860b);
+    color: #000;
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+}
+
+.success-btn {
+    background: linear-gradient(135deg, #2eff2e, #006400);
+    color: #000;
+    box-shadow: 0 4px 15px rgba(46, 255, 46, 0.3);
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Boosts */
+.section-title {
+    text-align: center;
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    color: var(--color-gold);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.boost-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.boost-card {
+    background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01));
+    border: 1px solid var(--color-glass-border);
+    padding: 15px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.boost-icon {
+    font-size: 2rem;
+    width: 50px;
+    text-align: center;
+}
+
+.boost-info {
+    flex: 1;
+}
+
+.boost-info h3 {
+    font-size: 1rem;
+    margin-bottom: 5px;
+}
+
+.boost-price {
+    color: var(--color-gold);
+    font-size: 0.9rem;
+    font-weight: bold;
+}
+
+.buy-btn {
+    background: transparent;
+    border: 1px solid var(--color-gold);
+    color: var(--color-gold);
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.buy-btn.gold-btn {
+    background: var(--color-gold);
+    color: #000;
+}
+
+.buy-btn.claimed {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: transparent;
+    color: var(--color-text-dim);
+    border-color: var(--color-text-dim);
+}
+
+.tg-subscription {
+    border: 1px solid var(--color-gold);
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.1);
+}
+
+/* Airdrop */
+.airdrop-card {
+    background: rgba(0,0,0,0.5);
+    border: 1px solid var(--color-gold);
+    padding: 30px 20px;
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.1);
+}
+
+.airdrop-date {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--color-gold);
+    margin-bottom: 20px;
+    letter-spacing: 2px;
+}
+
+.airdrop-desc {
+    color: #ddd;
+    line-height: 1.6;
+    margin-bottom: 30px;
+}
+
+.conversion-rate .rate-box {
+    background: rgba(255,255,255,0.1);
+    padding: 15px;
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    font-weight: bold;
+    font-family: monospace;
+}
+
+/* Bottom Nav */
+.bottom-nav {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 400px;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    display: flex;
+    justify-content: space-around;
+    padding: 10px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    z-index: 50;
+}
+
+.nav-item {
+    background: none;
+    border: none;
+    color: var(--color-text-dim);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    padding: 5px 15px;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.nav-item.active {
+    background: rgba(255, 215, 0, 0.15);
+    color: var(--color-gold);
+}
+
+.nav-item.active .nav-icon {
+    text-shadow: 0 0 10px var(--color-gold);
+    transform: scale(1.1);
+}
+
+.nav-icon {
+    font-size: 1.4rem;
+    transition: transform 0.3s;
+}
+
+.nav-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+
+.flash-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 0, 0, 0.4);
+    z-index: 999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.1s ease-out;
+}
+
+.flash-active {
+    opacity: 1;
+}
+
+.shake-screen {
+    animation: screenShake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+/* Timer */
+.timer-display {
+    text-align: center;
+    color: var(--color-gold);
+    font-size: 0.9rem;
+    margin-top: 5px;
+    font-family: monospace;
+    font-weight: bold;
+    text-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
+    display: none; /* Hidden by default */
+}
+
+.timer-display.visible {
+    display: block;
+}
+
